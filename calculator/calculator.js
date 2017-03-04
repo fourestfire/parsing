@@ -28,17 +28,11 @@ Calculator.prototype.digit = function () {
 };
 
 Calculator.prototype.number = function () {
-  var isNeg = false;
-  if (this.peek() === "-") {
-    isNeg = true;
-  }
-
-  var result = this.get();
+  var result = "";
   while (this.digit() || this.peek() == '.') {
     result += this.get();
   }
-
-  return isNeg ? 0 : Number(result);
+  return Number(result);
 };
 
 /*
