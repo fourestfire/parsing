@@ -43,6 +43,13 @@ function HTMLParser() {
   // Parse a single node, either an element or text node
   function parseNode() {
     // if the first char is a <, parse an Element
+    if (nextChar() === '<') {
+      // debugger;
+      return parseElement();
+      // debugger;
+    } else {
+      return parseText();
+    }
     // else parseText
   }
 
@@ -57,18 +64,19 @@ function HTMLParser() {
     var tagName = parseTagName();
 
     // TODO: parseAttributes
-    var attrs;
+    var attrs = parseAttributes();
 
     // check that we've got an end >
-    // 
+    //
     // <div class="MyClass"><h1>adsfs</h1>aflsdajkflsjdfkldjfkladsf</div>
     assert(consumeChar() === '>');
 
     // TODO: Parse all it's children Nodes (using parseNodes)
-    var children;
+    var children = parseNodes();
+    // debugger;
 
     // check that we have a matching end tag
-    // and that the tag is the same 
+    // and that the tag is the same
     // hint:
     //   use parseTagName to get the tagName and match it to the previous one
     assert(consumeChar() === '<');
@@ -93,22 +101,34 @@ function HTMLParser() {
   // e.g. class="my-class" id="testId"
   // Hint:
   // - You have continue parsing until you find the >
-  // - Consume White Space until you find an Attribute  
-  // 
+  // - Consume White Space until you find an Attribute
+  //
   // attributes = attr*
   function parseAttributes() {
     var attributes = {};
     // PARSE ATTRIBUTES
-
-
-
+    while (nextChar() !== '>') {
+      consumeWhiteSpace();
+      var attr = parseAttribute();  // { name: 'name' value: 'value' }
+      attributes[attr.name] = attr.value;
+      consumeWhiteSpace();
+    }
     return attributes;
   }
 
   // Step 4: Parse a single attribute assignment
   // e.g. class="myClass"
   function parseAttribute() {
-    var name, value;
+    var name = '', value;
+
+    while (nextChar() !== '=') {
+        name += consumeChar();
+    }
+
+    consumeChar(); // eat '='
+
+    //  "myClass"
+    value = parseAttributeValue();
 
     return {
       name: name,
@@ -122,9 +142,17 @@ function HTMLParser() {
   function parseAttributeValue() {
     // check for a quote
     // similar to parseTagName - get everything that's not an end-quote: "
-    // check for end quote 
-    return value;
+    // check for end quote
+    var value = '';
+    assert(consumeChar() === '"');
 
+    while (nextChar() !== '"') {
+      value += consumeChar();
+    }
+
+    assert(consumeChar() === '"');
+
+    return value;
   }
 
   /*
@@ -138,6 +166,8 @@ function HTMLParser() {
 
   // Given Utility Functions for your Parser
   // These should be pretty clear
+
+  //returns bool: is character not '<'
   function isTextChar(c) {
     return c !== '<';
   }
@@ -150,6 +180,7 @@ function HTMLParser() {
     return c === ' ' || c === '\n';
   }
 
+//return result: takes function that returns bool, which returns result
   function consumeWhile(testFn) {
     var result = '';
 
@@ -159,19 +190,22 @@ function HTMLParser() {
     return result;
   }
 
-
+//returns character at current position and increments after returning
   function consumeChar() {
     return input.charAt(pos++);
   }
 
+//returns character at current position
   function nextChar() {
     return input.charAt(pos);
   }
 
+//returns bool: if string is at start of current position
   function startsWith(str) {
     return input.substr(pos).indexOf(str) === 0;
   }
 
+//returns bool: index of end of file is greater than or equal to input length
   function eof() {
     return pos >= input.length;
   }
